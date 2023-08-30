@@ -18,14 +18,15 @@ exports.userLogin = async (req, res, next) => {
 
         // accessToken 발급
         const accessToken = jwt.sign(
-        { 
-            userId: user._id,
-            email: user.email
-        }, process.env.ACCESS_SECRET,
-        {
-            expiresIn: '1h',
-            issuer : 'Love Keeper'
-        });
+            { 
+                userId: user._id,
+                email: user.email
+            }, process.env.ACCESS_SECRET,
+            {
+                expiresIn: '1h',
+                issuer : 'Love Keeper'
+            }
+        );
     
         // refreshToken 발급
         const refreshToken = jwt.sign(
@@ -79,7 +80,7 @@ exports.getUserInfo = async (req, res) => {
         return res.status(200).json(userInfo);
     } catch (error) {
         console.error("Error in getUserInfo.", error);
-        return res.status(500).json({ error: "서버 오류", success: false });
+        return res.status(500).json({ error: "Server error", success: false });
     }
 };
 
@@ -97,14 +98,15 @@ exports.refreshToken = async (req, res) => {
 
         // accessToken 발급
         const accessToken = jwt.sign(
-        { 
-            userId: decoded._id,
-            email: decoded.email
-        }, process.env.ACCESS_SECRET,
-        {
-            expiresIn: '1h',
-            issuer : 'Love Keeper'
-        });
+            { 
+                userId: decoded._id,
+                email: decoded.email
+            }, process.env.ACCESS_SECRET,
+            {
+                expiresIn: '1h',
+                issuer : 'Love Keeper'
+            }
+        );
 
         res.cookie('accessToken', accessToken, {
             secure : true,
@@ -123,7 +125,6 @@ exports.refreshToken = async (req, res) => {
 exports.userLogout = async (req, res) => {
     try {
         res.clearCookie('accessToken'); // accessToken 쿠키를 삭제
-
         res.status(200).json("Logout success");
     } catch (error) {
         console.error("Error in userLogout.", error);

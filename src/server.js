@@ -1,11 +1,13 @@
 require("./db");
 const express = require("express");
+const session = require("express-session");
 const passport = require('passport');
 const KakaoStrategy = require('passport-kakao').Strategy;
 const cookieSession = require('cookie-session');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const morgan = require("morgan");
+const User = require('./models/User');
 
 // Routers
 const userRouter = require("./routers/userRouter.js");
@@ -27,6 +29,12 @@ app.use(cookieSession({
     maxAge: 24 * 60 * 60 * 1000 // 세션 유효기간 (1일)
 }));
 
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true
+  }));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -36,37 +44,7 @@ app.use(cors({
     credentials: true
 }))
 
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
-
-passport.deserializeUser((user, done) => {
-    done(null, user);
-});
-
-passport.use(new KakaoStrategy({
-    clientID: process.env.KAKAO_CLIENT_ID,
-    callbackURL: process.env.KAKAO_REDIRECT_URI
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        let user = await User.findOne({ kakaoId: profile.id });
-
-        if (!user) {
-            user = new User({
-                kakaoId: profile.id,
-                displayName: profile.displayName
-            });
-
-            await user.save();
-        }
-
-        return done(null, user);
-
-    } catch (error) {
-        return done(error, false);
-    }
-}));
-
+require('./auth/kakaoStrategy')(passport);
 
 app.use('/', userRouter);
 app.use('/', kakaoRouter);
